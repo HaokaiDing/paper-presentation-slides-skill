@@ -4,7 +4,7 @@ Read this reference whenever a deck contains displayed mathematics. Audit each d
 
 ## Required explanation layers
 
-Every displayed formula needs all three layers on the same frame, or across immediately adjacent frames with an explicit pointer:
+When a formula or its notation is first introduced, provide all three layers on the same frame, or across immediately adjacent frames with an explicit pointer. On later reuse, keep its operational role visible and give a compact local reminder or an explicit pointer to the earlier notation frame; explain any new or changed symbols locally:
 
 1. **Operational role:** identify whether it is a definition, representation, transformation, probability, constraint, optimization objective, update rule, estimator, or evaluation metric. State what it consumes, what it produces, and where the output goes next in the method.
 2. **Complete notation key:** define every uncommon symbol and every paper-specific use of a common symbol.

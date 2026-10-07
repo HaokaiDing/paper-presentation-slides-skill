@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -14,6 +16,47 @@ from theme_source import (
     install_theme,
     resolve_theme,
 )
+
+
+SHIM_FILE = "unicode-shim.tex"
+DEFAULT_VENUE = "RCL Reading Group"
+SHIM_SOURCE = Path(__file__).resolve().parent.parent / "templates" / SHIM_FILE
+SHIM_INPUT = f"\\input{{{SHIM_FILE}}}\n"
+SHIM_ANCHORS = (
+    re.compile(r"^\s*\\usetheme\s*(?:\[[^\]]*\])?\s*\{\s*MBZUAI"),
+    re.compile(r"^\s*\\begin\s*\{\s*document\s*\}"),
+)
+
+
+def _is_comment(line: str) -> bool:
+    return line.lstrip().startswith("%")
+
+
+def render_with_unicode_shim(main_tex: str) -> str:
+    """Return main.tex with the shim \\input added to the preamble.
+
+    pdfLaTeX treats an unmapped non-ASCII character as a fatal error and emits
+    no PDF, so a single Greek letter or curly quote pasted from the paper kills
+    an otherwise finished build. Install the mapping up front instead.
+
+    Anchors match per line and comment lines are skipped. A plain substring
+    replace would hit `% \\usetheme{MBZUAI}` inside a commented-out variant,
+    which leaves the \\input dead inside that comment and simultaneously
+    promotes the commented anchor itself to live code.
+    """
+
+    lines = main_tex.splitlines(keepends=True)
+    if any(SHIM_FILE in line and not _is_comment(line) for line in lines):
+        return main_tex
+    for pattern in SHIM_ANCHORS:
+        for index, line in enumerate(lines):
+            if not _is_comment(line) and pattern.match(line):
+                lines.insert(index, SHIM_INPUT)
+                return "".join(lines)
+    raise RuntimeError(
+        "template has no uncommented preamble anchor for the Unicode shim "
+        "(expected \\usetheme{MBZUAI...} or \\begin{document})"
+    )
 
 
 SOURCES = """# Sources and provenance
@@ -33,7 +76,7 @@ Retrieval date for online sources: **@@RETRIEVED@@**.
 - Supplementary material:
 - License:
 
-Keep immutable source copies under `paper-source/`. Record filenames and SHA-256 hashes for archived downloads.
+Keep immutable source copies under `paper-source/`. For each archived download record the local filename, the exact URL it came from, the retrieval date, and its size in bytes.
 
 ## Figures and tables
 
@@ -91,7 +134,11 @@ def main() -> int:
         required=True,
         help="presenter display name confirmed by the user",
     )
-    cli.add_argument("--venue", default="RCL Reading Group")
+    cli.add_argument(
+        "--venue",
+        default=DEFAULT_VENUE,
+        help="session or institution name for the title page and default footer",
+    )
     cli.add_argument("--date", default=r"\today", help="LaTeX-safe date/version line")
     cli.add_argument("--retrieved", default="YYYY-MM-DD")
     footer = cli.add_mutually_exclusive_group(required=True)
@@ -113,8 +160,8 @@ def main() -> int:
     )
     cli.add_argument(
         "--theme-ref",
-        default=DEFAULT_THEME_REF,
-        help="theme branch, tag, or reachable commit; defaults to main",
+        default=None,
+        help=f"theme branch, tag, or reachable commit; defaults to the pinned {DEFAULT_THEME_REF[:12]}",
     )
     cli.add_argument(
         "--theme-dir",
@@ -131,7 +178,7 @@ def main() -> int:
     short_title = args.short_title or args.title
     if args.confirm_default_footer:
         foot_left = short_title
-        foot_center = rf"RCL Reading Group by \textit{{{args.presenter}}}"
+        foot_center = rf"{args.venue} by \textit{{{args.presenter}}}"
         foot_right = r"\insertframenumber{} / \inserttotalframenumber"
     else:
         foot_left, foot_center, foot_right = args.footer
@@ -143,6 +190,12 @@ def main() -> int:
             local_directory=args.theme_dir,
         ) as snapshot:
             main_template = (snapshot.path / TEMPLATE_PATH).read_text(encoding="utf-8")
+            # fontspec owns \strong under XeLaTeX and LuaLaTeX.
+            main_template = re.sub(r"\\strong(?![A-Za-z@])", r"\\paperstrong", main_template)
+            if args.venue != DEFAULT_VENUE:
+                main_template = main_template.replace(
+                    r"\institute[RCL]{@@VENUE@@}", r"\institute{@@VENUE@@}"
+                )
             values = {
                 "TITLE": args.title,
                 "SHORT_TITLE": short_title,
@@ -160,13 +213,17 @@ def main() -> int:
                 "THEME_COMMIT": snapshot.commit,
             }
 
+            # Resolve the shim anchor before creating anything on disk, so an
+            # incompatible template fails without leaving a half-built project
+            # that blocks a retry at the same path.
+            main_tex = render_with_unicode_shim(materialize(main_template, values))
+
             output.mkdir(parents=True, exist_ok=True)
             install_theme(snapshot, output)
             for name in ("paper-source", "figures", "data", "build", "rendered"):
                 (output / name).mkdir()
-            (output / "main.tex").write_text(
-                materialize(main_template, values), encoding="utf-8"
-            )
+            shutil.copy2(SHIM_SOURCE, output / SHIM_FILE)
+            (output / "main.tex").write_text(main_tex, encoding="utf-8")
             (output / "SOURCES.md").write_text(
                 materialize(SOURCES, values), encoding="utf-8"
             )

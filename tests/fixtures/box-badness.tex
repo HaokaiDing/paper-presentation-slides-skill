@@ -1,0 +1,21 @@
+\documentclass{beamer}
+\begin{document}
+\begin{frame}{Box diagnostic reproduction}
+\typeout{PPS-DEFAULT hbadness=\the\hbadness; vbadness=\the\vbadness}
+\begingroup
+\hbadness=0 \vbadness=0
+\typeout{PPS-LOOSE-HBOX}
+\setbox0=\hbox to12pt{\hskip10pt plus10pt}\box0
+\typeout{PPS-TIGHT-HBOX}
+\setbox0=\hbox to8pt{\hskip10pt minus10pt}\box0
+\typeout{PPS-LOOSE-VBOX}
+\setbox0=\vbox to12pt{\vskip10pt plus10pt}\box0
+\typeout{PPS-TIGHT-VBOX}
+\setbox0=\vbox to8pt{\vskip10pt minus10pt}\box0
+\setbox0=\hbox to12pt{\hskip10pt plus1pt}\box0
+\setbox0=\vbox to12pt{\vskip10pt plus1pt}\box0
+\setbox0=\hbox to30pt{X}\box0
+\setbox0=\vbox to30pt{\hbox{X}}\box0
+\endgroup
+\end{frame}
+\end{document}

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import contextlib
+import re
 import shutil
 import subprocess
 import tempfile
@@ -13,8 +14,13 @@ from pathlib import Path
 from typing import Iterator
 
 
-DEFAULT_THEME_REPO = "https://github.com/MicDZ/MBZUAI_Beamer_Theme.git"
-DEFAULT_THEME_REF = "main"
+DEFAULT_THEME_REPO = "https://github.com/HaokaiDing/MBZUAI_Beamer_Theme.git"
+# Pinned by default. A moving ref silently invalidates visual approval: the
+# theme owns typography, spacing, headers, and footers, so an upstream commit
+# can reflow a deck that already passed QA. Bump this constant deliberately,
+# then recompile and repeat the full visual pass.
+DEFAULT_THEME_REF = "6cae473fa24c0092680206e15a02b7d3262f0f3a"
+UPSTREAM_THEME_REPO = "https://github.com/MicDZ/MBZUAI_Beamer_Theme.git"
 TEMPLATE_PATH = Path("templates/paper-presentation.tex.in")
 THEME_FILES = (
     "beamerthemeMBZUAI.sty",
@@ -84,7 +90,7 @@ def _git_value(path: Path, *arguments: str) -> str | None:
 def resolve_theme(
     *,
     repository: str = DEFAULT_THEME_REPO,
-    ref: str = DEFAULT_THEME_REF,
+    ref: str | None = None,
     local_directory: Path | None = None,
 ) -> Iterator[ThemeSnapshot]:
     """Yield a validated local theme snapshot and clean temporary downloads."""
@@ -97,6 +103,13 @@ def resolve_theme(
         source = origin or "local directory"
         yield ThemeSnapshot(path, source, "local checkout", commit)
         return
+
+    if ref is None:
+        if repository != DEFAULT_THEME_REPO:
+            raise RuntimeError(
+                "--theme-ref is required when --theme-repo selects a custom repository"
+            )
+        ref = DEFAULT_THEME_REF
 
     git = shutil.which("git")
     if not git:
@@ -113,8 +126,43 @@ def resolve_theme(
         yield ThemeSnapshot(path, repository, ref, commit)
 
 
+def _refresh_sources_provenance(project: Path, snapshot: ThemeSnapshot) -> None:
+    """Refresh generated Theme fields without replacing the user's notes."""
+
+    sources_path = project / "SOURCES.md"
+    if not sources_path.is_file():
+        return
+
+    replacements = {
+        r"(- Repository/source: )(?:local directory(?=\s|<!--|$)|[^\s<]+)": snapshot.source,
+        r"(- Requested ref: )`[^`\r\n]*`": f"`{snapshot.requested_ref}`",
+        r"(- Resolved commit: )`[^`\r\n]*`": f"`{snapshot.commit}`",
+    }
+
+    original = sources_path.read_bytes().decode("utf-8")
+    lines = original.splitlines(keepends=True)
+    in_theme = False
+    for index, line in enumerate(lines):
+        if not in_theme and line.rstrip() == "## Theme":
+            in_theme = True
+            continue
+        if not in_theme:
+            continue
+        if re.match(r"^#{1,6}(?:\s|$)", line):
+            break
+        for pattern, value in replacements.items():
+            match = re.match(pattern, line)
+            if match:
+                lines[index] = match[1] + value + line[match.end():]
+                del replacements[pattern]
+                break
+    updated = "".join(lines)
+    if updated != original:
+        sources_path.write_bytes(updated.encode("utf-8"))
+
+
 def install_theme(snapshot: ThemeSnapshot, project: Path) -> None:
-    """Install or refresh only theme-owned files in a slide project."""
+    """Refresh theme-owned files and generated SOURCES.md provenance fields."""
 
     manifest_path = project / MANIFEST_FILE
     if manifest_path.is_file():
@@ -144,6 +192,7 @@ def install_theme(snapshot: ThemeSnapshot, project: Path) -> None:
     shutil.copy2(snapshot.path / "README.md", project / "THEME_README.md")
     installed.extend(("THEME_LICENSE", "THEME_README.md"))
 
+    provenance_path = project / "THEME_UPSTREAM.md"
     retrieved = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
     provenance = f"""# MBZUAI Beamer theme provenance
 
@@ -153,5 +202,6 @@ def install_theme(snapshot: ThemeSnapshot, project: Path) -> None:
 - Retrieved: {retrieved}
 - License: MIT; see `THEME_LICENSE`
 """
-    (project / "THEME_UPSTREAM.md").write_text(provenance, encoding="utf-8")
+    provenance_path.write_text(provenance, encoding="utf-8")
+    _refresh_sources_provenance(project, snapshot)
     manifest_path.write_text("\n".join(installed) + "\n", encoding="utf-8")

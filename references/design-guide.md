@@ -73,13 +73,13 @@ Do not inflate a qualitative downstream demonstration into task-level success. `
 
 ## Visual system
 
-- Use 16:9 MBZUAI Beamer with the navy/sand theme fetched from `MicDZ/MBZUAI_Beamer_Theme`. Record the resolved commit for every generated deck.
-- Keep title and closing frames free of normal footers and frame titles. Use the standard `\\mbzuaiThankYou` closing frame.
+- Use 16:9 MBZUAI Beamer with the navy/sand theme, fetched at the commit pinned in `scripts/theme_source.py` from `HaokaiDing/MBZUAI_Beamer_Theme` (a fork of `MicDZ/MBZUAI_Beamer_Theme`). Record the resolved commit for every generated deck.
+- Keep title and closing frames free of normal footers and frame titles. Use the standard `\mbzuaiThankYou` closing frame.
 - Distinguish paper authors from the speaker, e.g. `Paper by ... -- Presented by ...`.
 - Prefer one dominant visual or table. Two-column layouts work when one side explains and the other supplies evidence; three equal columns work for input/output/challenge or stage summaries.
 - Use theme blocks as semantic layers: navy for definitions/structure, sand for the central interpretation or caution. Do not turn every paragraph into a block.
 - Use bold and color to guide reading order, not to decorate. A result table should not highlight more cells than the spoken argument can explain.
-- Keep ordinary content at `\\small` or larger when possible. `\\footnotesize` is for compact legends or notation; `\\scriptsize` and `\\tiny` should be limited to provenance or unavoidable table detail. If a core idea needs tiny type, split or redesign the frame.
+- Keep ordinary content at `\small` or larger when possible. `\footnotesize` is for compact legends or notation; `\scriptsize` and `\tiny` should be limited to provenance or unavoidable table detail. If a core idea needs tiny type, split or redesign the frame.
 - Preserve aspect ratio. Crop irrelevant whitespace before reducing the whole figure. Split dense multipanel figures when labels are unreadable.
 - Keep a compact visible source locator at the bottom of every evidence-bearing frame. Tiny attribution is acceptable; tiny substantive content is not.
 

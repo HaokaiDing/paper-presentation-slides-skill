@@ -16,7 +16,11 @@ def main() -> int:
     )
     cli.add_argument("project", type=Path, help="existing slide project directory")
     cli.add_argument("--theme-repo", default=DEFAULT_THEME_REPO)
-    cli.add_argument("--theme-ref", default=DEFAULT_THEME_REF)
+    cli.add_argument(
+        "--theme-ref",
+        default=None,
+        help=f"theme ref; defaults to pinned {DEFAULT_THEME_REF[:12]} for the default repository",
+    )
     cli.add_argument("--theme-dir", type=Path, help="use an existing local theme checkout")
     cli.add_argument("--yes", action="store_true", help="confirm overwriting theme-owned files")
     args = cli.parse_args()

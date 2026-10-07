@@ -1,0 +1,38 @@
+\documentclass{beamer}
+\usepackage{pifont}
+\input{unicode-shim.tex}
+\newbox\unicodeprobe
+\newbox\controlprobe
+
+\begin{document}
+% Compile twice and inspect the actual PDF outline title: it must remain α → β.
+\section{α → β}
+\begin{frame}{Unicode workflow probes}
+% A pasted bullet must retain the same math glyph and spacing as \bullet.
+\setbox\unicodeprobe=\hbox{$a • b$}
+\setbox\controlprobe=\hbox{$a \bullet b$}
+\typeout{PPS-BULLET-UNICODE-WIDTH=\the\wd\unicodeprobe}
+\typeout{PPS-BULLET-CONTROL-WIDTH=\the\wd\controlprobe}
+\ifdim\wd\unicodeprobe=\wd\controlprobe\else
+  \errmessage{Unicode bullet width differs from its math control}
+\fi
+Unicode bullet: $a • b$; control: $a \bullet b$.
+
+% Permit breaks after ordinary hyphens, but disable word hyphenation so this
+% probe isolates the pasted U+2011 non-breaking hyphen.
+\begingroup
+\hyphenpenalty=10000 \exhyphenpenalty=0
+\setbox\unicodeprobe=\vbox{\hsize=35pt\rightskip=0pt plus1fil
+  \noindent state‑of‑the‑art\par}
+\setbox\controlprobe=\vbox{\hsize=35pt\rightskip=0pt plus1fil
+  \noindent state\mbox{-}of\mbox{-}the\mbox{-}art\par}
+\typeout{PPS-NBH-UNICODE-HEIGHT=\the\ht\unicodeprobe}
+\typeout{PPS-NBH-CONTROL-HEIGHT=\the\ht\controlprobe}
+\ifdim\ht\unicodeprobe=\ht\controlprobe\else
+  \errmessage{Unicode non-breaking hyphen wraps differently from its control}
+\fi
+\par Unicode non-breaking hyphen:\par\box\unicodeprobe
+\par No-break control:\par\box\controlprobe
+\endgroup
+\end{frame}
+\end{document}

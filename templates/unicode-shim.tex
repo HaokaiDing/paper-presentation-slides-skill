@@ -1,0 +1,147 @@
+% Unicode shim for pdfLaTeX paper decks.
+%
+% pdfLaTeX aborts with "Unicode character ... not set up for use with LaTeX"
+% and produces no PDF at all when a non-ASCII character reaches the source.
+% Text pasted from a paper PDF, an HTML abstract, or a results table routinely
+% carries Greek letters, relation symbols, arrows, en/em dashes, curly quotes,
+% and non-breaking spaces, so the failure lands at the end of a build that was
+% otherwise finished.
+%
+% This file maps those characters to their LaTeX equivalents. Math symbols use
+% \ensuremath so they work in both text and math mode.
+%
+% Scope: symbols only. CJK text still needs a Unicode engine (lualatex or
+% xelatex) with fontspec and a CJK font; this shim does not provide that.
+
+\usepackage{newunicodechar}
+
+% --- Greek, lowercase ---------------------------------------------------
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{γ}{\ensuremath{\gamma}}
+\newunicodechar{δ}{\ensuremath{\delta}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}
+\newunicodechar{ζ}{\ensuremath{\zeta}}
+\newunicodechar{η}{\ensuremath{\eta}}
+\newunicodechar{θ}{\ensuremath{\theta}}
+\newunicodechar{ι}{\ensuremath{\iota}}
+\newunicodechar{ο}{\ensuremath{o}}% U+03BF omicron, visually a Latin o
+\newunicodechar{ς}{\ensuremath{\varsigma}}% word-final sigma
+\newunicodechar{κ}{\ensuremath{\kappa}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{ν}{\ensuremath{\nu}}
+\newunicodechar{ξ}{\ensuremath{\xi}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{ρ}{\ensuremath{\rho}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{τ}{\ensuremath{\tau}}
+\newunicodechar{υ}{\ensuremath{\upsilon}}
+\newunicodechar{φ}{\ensuremath{\varphi}}
+\newunicodechar{χ}{\ensuremath{\chi}}
+\newunicodechar{ψ}{\ensuremath{\psi}}
+\newunicodechar{ω}{\ensuremath{\omega}}
+
+% --- Greek, uppercase ---------------------------------------------------
+\newunicodechar{Γ}{\ensuremath{\Gamma}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{Θ}{\ensuremath{\Theta}}
+\newunicodechar{Λ}{\ensuremath{\Lambda}}
+\newunicodechar{Ξ}{\ensuremath{\Xi}}
+\newunicodechar{Π}{\ensuremath{\Pi}}
+\newunicodechar{Σ}{\ensuremath{\Sigma}}
+\newunicodechar{Φ}{\ensuremath{\Phi}}
+\newunicodechar{Ψ}{\ensuremath{\Psi}}
+\newunicodechar{Ω}{\ensuremath{\Omega}}
+
+% --- Relations and operators --------------------------------------------
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{≃}{\ensuremath{\simeq}}
+\newunicodechar{∼}{\ensuremath{\sim}}
+\newunicodechar{≡}{\ensuremath{\equiv}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≪}{\ensuremath{\ll}}
+\newunicodechar{≫}{\ensuremath{\gg}}
+\newunicodechar{−}{\ensuremath{-}}% U+2212 MINUS SIGN, not the ASCII hyphen
+\newunicodechar{±}{\ensuremath{\pm}}
+\newunicodechar{∓}{\ensuremath{\mp}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{÷}{\ensuremath{\div}}
+\newunicodechar{⋅}{\ensuremath{\cdot}}
+\newunicodechar{∝}{\ensuremath{\propto}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{∂}{\ensuremath{\partial}}
+\newunicodechar{∇}{\ensuremath{\nabla}}
+% \surd, not \sqrt{}: a pasted "√x" leaves x outside the radical either way,
+% but \sqrt{} also draws an empty overline, which reads as a radical covering
+% nothing. \surd is the bare glyph the source character actually was.
+\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{∑}{\ensuremath{\sum}}
+\newunicodechar{∏}{\ensuremath{\prod}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{∉}{\ensuremath{\notin}}
+\newunicodechar{⊂}{\ensuremath{\subset}}
+\newunicodechar{⊆}{\ensuremath{\subseteq}}
+\newunicodechar{∪}{\ensuremath{\cup}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{∀}{\ensuremath{\forall}}
+\newunicodechar{∃}{\ensuremath{\exists}}
+\newunicodechar{¬}{\ensuremath{\neg}}
+\newunicodechar{∅}{\ensuremath{\emptyset}}
+\newunicodechar{⊙}{\ensuremath{\odot}}
+\newunicodechar{⊕}{\ensuremath{\oplus}}
+\newunicodechar{⊗}{\ensuremath{\otimes}}
+\newunicodechar{ℓ}{\ensuremath{\ell}}
+\newunicodechar{ℝ}{\ensuremath{\mathbb{R}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{ℤ}{\ensuremath{\mathbb{Z}}}
+\newunicodechar{ℚ}{\ensuremath{\mathbb{Q}}}
+\newunicodechar{ℂ}{\ensuremath{\mathbb{C}}}
+\newunicodechar{𝔼}{\ensuremath{\mathbb{E}}}
+
+% --- Arrows -------------------------------------------------------------
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+\newunicodechar{⇐}{\ensuremath{\Leftarrow}}
+\newunicodechar{⇔}{\ensuremath{\Leftrightarrow}}
+\newunicodechar{↑}{\ensuremath{\uparrow}}
+\newunicodechar{↓}{\ensuremath{\downarrow}}
+\newunicodechar{↦}{\ensuremath{\mapsto}}
+
+% --- Punctuation and text symbols ---------------------------------------
+% These arrive with almost any copy-paste from a rendered paper.
+\newunicodechar{—}{---}
+\newunicodechar{–}{--}
+\newunicodechar{‐}{-}
+\newunicodechar{‑}{\mbox{-}}
+\newunicodechar{‘}{`}
+\newunicodechar{’}{'}
+\newunicodechar{“}{``}
+\newunicodechar{”}{''}
+\newunicodechar{…}{\dots}
+\newunicodechar{·}{\ensuremath{\cdot}}
+\newunicodechar{•}{\ensuremath{\bullet}}
+\newunicodechar{°}{\ensuremath{^\circ}}
+\newunicodechar{′}{\ensuremath{{}^\prime}}
+\newunicodechar{″}{\ensuremath{{}^{\prime\prime}}}
+\newunicodechar{§}{\S}
+\newunicodechar{†}{\dag}
+\newunicodechar{‡}{\ddag}
+% Invisible characters, declared by code point so the literal byte never has to
+% survive an editor round-trip. \DeclareUnicodeCharacter belongs to pdfLaTeX's
+% 8-bit input path and is an undefined control sequence under xelatex/lualatex,
+% which handle both characters natively, so guard the calls rather than break
+% the preamble for anyone who switches engine for CJK.
+\ifdefined\DeclareUnicodeCharacter
+  \DeclareUnicodeCharacter{00A0}{~}% U+00A0 no-break space
+  \DeclareUnicodeCharacter{00AD}{\-}% U+00AD soft hyphen
+\fi
+\newunicodechar{✓}{\ding{51}}
+\newunicodechar{✗}{\ding{55}}
+\newunicodechar{✔}{\ding{52}}
+\newunicodechar{✘}{\ding{56}}
